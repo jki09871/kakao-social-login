@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- jQuery 라이브러리를 로드하여 페이지에서 AJAX와 DOM 조작을 쉽게 할 수 있음 -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <!-- js-cookie 라이브러리를 사용하여 브라우저 쿠키를 쉽게 다룰 수 있도록 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
+
+    <meta charset="UTF-8">
+    <title>Title</title> <!-- 페이지 제목 -->
+</head>
+<body>
+<div id="header-title-login-user">
+    <!-- 사용자 이름을 표시할 영역 -->
+    이름: <span id="username"></span></br>
+    <!-- 사용자 이메일을 표시할 영역 -->
+    이메일: <span id="email"></span></br>
+    <!-- 사용자 권한을 표시할 영역 -->
+    권한: <span id="userRole"></span>
+</div>
+</body>
+</html>
+<script>
+    // 문서가 준비되면 실행되는 코드
+    $(document).ready(function () {
+
+        // 쿠키에서 JWT 토큰을 가져오는 함수 호출
+        const auth = getToken();
+
+        // AJAX 요청을 사용하여 서버에서 사용자 정보를 가져옴
+        $.ajax({
+            type: 'GET', // HTTP GET 메소드 사용
+            url: "/api/user-info", // 사용자 정보를 가져오는 API 엔드포인트
+            contentType: 'application/json', // 요청의 콘텐츠 타입을 JSON으로 설정
+            data : {auth : auth} // 쿠키에서 가져온 JWT 토큰을 파라미터로 전달
+        }).done(function (res) {
+            // 요청 성공 시 응답에서 사용자 이름과 역할(role)을 추출
+            const username = res.username;
+            const email = res.email;
+            const userRole = res.role;
+
+            // username 값이 있으면 HTML 요소에 사용자 이름과 역할을 표시
+            if (username) {
+                $('#username').text(username); // 사용자 이름을 HTML의 #username 요소에 삽입
+                $('#email').text(email); // 사용자 이름을 HTML의 #username 요소에 삽입
+                $('#userRole').text(userRole); // 사용자 역할을 HTML의 #userRole 요소에 삽입
+            } else {
+                // username이 없으면 로그인 페이지로 리다이렉트
+                window.location.href = '/api/user/login-page';
+            }
+        }).fail(function (jqXHR) {
+            // 요청 실패 시 처리
+            if (jqXHR.status === 401 || jqXHR.status === 403) {
+                // 인증 실패일 경우 로그아웃 처리 (로그아웃 함수 호출)
+                logout();
+            } else {
+                // 그 외 오류 발생 시 알림 메시지 출력
+                alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+            }
+        });
+
+        // 쿠키에서 JWT 토큰을 가져오는 함수
+        function getToken() {
+            // js-cookie 라이브러리를 사용하여 'Authorization' 쿠키 값을 가져옴
+            let auth = Cookies.get('Authorization');
+
+            // 쿠키에 'Authorization' 값이 없으면 빈 문자열 반환
+            if (auth === undefined) {
+                return '';
+            }
+
+            // 'Bearer' 접두사가 없고, 쿠키 값이 비어있지 않으면 'Bearer '를 붙여줌
+            if (auth.indexOf('Bearer') === -1 && auth !== '') {
+                auth = 'Bearer ' + auth;
+            }
+
+            return auth; // JWT 토큰을 반환
+        }
+    });
+</script>

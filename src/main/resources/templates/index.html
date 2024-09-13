@@ -1,0 +1,14 @@
+<!-- src/main/resources/templates/login.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+<h1>카카오 로그인!</h1>
+<button id="login-kakao-btn"
+        onclick="location.href='https://kauth.kakao.com/oauth/authorize?client_id=f9e131b799a0fab1a582e9b668ac24b5&redirect_uri=http://localhost:8080/api/user/kakao/callback&response_type=code'">
+    <img src="/images/kakao_login_medium_narrow.png" alt="Kakao Login">
+</button>
+</body>
+</html>
